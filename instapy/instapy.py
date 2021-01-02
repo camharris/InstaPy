@@ -281,6 +281,7 @@ class InstaPy:
         self.mandatory_language = False
         self.mandatory_character = []
         self.check_letters = {}
+        self.activity_map = {}
 
         # use this variable to terminate the nested loops after quotient
         # reaches
@@ -1583,7 +1584,7 @@ class InstaPy:
                                     if is_video
                                     else self.photo_comments
                                 )
-                                success = process_comments(
+                                (success, comment_data) = process_comments(
                                     comments,
                                     temp_comments,
                                     self.delimit_commenting,
@@ -1784,7 +1785,7 @@ class InstaPy:
                                 self.video_comments if is_video else self.photo_comments
                             )
 
-                            success = process_comments(
+                            (success, comment_data) = process_comments(
                                 comments,
                                 temp_comments,
                                 self.delimit_commenting,
@@ -1883,6 +1884,8 @@ class InstaPy:
         followed = 0
         not_valid_users = 0
 
+        activity_map = {'comments': {}, 'followed': [], 'liked': []}
+
         # if smart hashtag is enabled
         if use_smart_hashtags is True and self.smart_hashtags != []:
             self.logger.info("Using smart hashtags")
@@ -1980,6 +1983,7 @@ class InstaPy:
 
                         if like_state is True:
                             liked_img += 1
+                            activity_map['liked'].append({'username': user_name, 'post': link})
                             # reset jump counter after a successful like
                             self.jumps["consequent"]["likes"] = 0
 
@@ -2016,7 +2020,7 @@ class InstaPy:
                                     if is_video
                                     else self.photo_comments
                                 )
-                                success = process_comments(
+                                (success, comment_data) = process_comments(
                                     comments,
                                     temp_comments,
                                     self.delimit_commenting,
@@ -2032,6 +2036,7 @@ class InstaPy:
 
                                 if success:
                                     commented += 1
+                                    activity_map['comments'][link] = comment_data
                             else:
                                 self.logger.info("--> Not commented")
                                 sleep(1)
@@ -2059,6 +2064,7 @@ class InstaPy:
                                 )
                                 if follow_state is True:
                                     followed += 1
+                                    activity_map['followed'] += user_name
                             else:
                                 self.logger.info("--> Not following")
                                 sleep(1)
@@ -2115,6 +2121,7 @@ class InstaPy:
         self.followed += followed
         self.inap_img += inap_img
         self.not_valid_users += not_valid_users
+        self.activity_map = activity_map
 
         return self
 
@@ -2306,7 +2313,7 @@ class InstaPy:
                                     if is_video
                                     else self.photo_comments
                                 )
-                                success = process_comments(
+                                (success, comment_data) = process_comments(
                                     comments,
                                     temp_comments,
                                     self.delimit_commenting,
@@ -2591,7 +2598,7 @@ class InstaPy:
                                         if is_video
                                         else self.photo_comments
                                     )
-                                    success = process_comments(
+                                    (success, comment_data) = process_comments(
                                         comments,
                                         temp_comments,
                                         self.delimit_commenting,
@@ -2903,7 +2910,7 @@ class InstaPy:
                                         if is_video
                                         else self.photo_comments
                                     )
-                                    success = process_comments(
+                                    (success, comment_data) = process_comments(
                                         comments,
                                         temp_comments,
                                         self.delimit_commenting,
@@ -4074,7 +4081,7 @@ class InstaPy:
                                             if is_video
                                             else self.photo_comments
                                         )
-                                        success = process_comments(
+                                        (success, comment_data) = process_comments(
                                             comments,
                                             temp_comments,
                                             self.delimit_commenting,
@@ -4608,6 +4615,7 @@ class InstaPy:
         inap_img = 0
         followed = 0
         not_valid_users = 0
+        activity_map = {'comments': {}, 'followed': [], 'liked': []}
 
         # if smart hashtag is enabled
         if use_smart_hashtags is True and self.smart_hashtags != []:
@@ -4697,6 +4705,7 @@ class InstaPy:
                         )
                         if follow_state is True:
                             followed += 1
+                            activity_map['followed'].append(user_name)
                             # reset jump counter after a successful follow
                             self.jumps["consequent"]["follows"] = 0
 
@@ -4739,6 +4748,7 @@ class InstaPy:
         self.followed += followed
         self.inap_img += inap_img
         self.not_valid_users += not_valid_users
+        self.activity_map = activity_map
 
         return self
 
@@ -4855,7 +4865,7 @@ class InstaPy:
                             comments = self.comments + (
                                 self.video_comments if is_video else self.photo_comments
                             )
-                            success = process_comments(
+                            (success, comment_data) = process_comments(
                                 comments,
                                 temp_comments,
                                 self.delimit_commenting,

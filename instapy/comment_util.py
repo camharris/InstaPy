@@ -62,7 +62,7 @@ def comment_image(browser, username, comments, blacklist, logger, logfolder):
     """Checks if it should comment on the image"""
     # check action availability
     if quota_supervisor("comments") == "jump":
-        return False, "jumped"
+        return False, "jumped", None
 
     rand_comment = random.choice(comments).format(username)
     rand_comment = emoji.demojize(rand_comment)
@@ -119,7 +119,7 @@ def comment_image(browser, username, comments, blacklist, logger, logfolder):
             logger.warning(
                 "--> Comment Action Likely Failed!\t~comment Element was not found"
             )
-            return False, "commenting disabled"
+            return False, "commenting disabled", None
 
     except InvalidElementStateException:
         logger.warning(
@@ -131,13 +131,14 @@ def comment_image(browser, username, comments, blacklist, logger, logfolder):
         logger.error(ex)
 
     logger.info("--> Commented: {}".format(rand_comment.encode("utf-8")))
+    comment_data = {'username': username, 'comment': "{}".format(rand_comment.encode("utf-8"))}
     Event().commented(username)
 
     # get the post-comment delay time to sleep
     naply = get_action_delay("comment")
     sleep(naply)
 
-    return True, "success"
+    return True, "success", comment_data
 
 
 def verify_commenting(browser, maximum, minimum, logger):
@@ -453,7 +454,7 @@ def process_comments(
 
     # smart commenting
     if comments and publish:
-        comment_state, _ = comment_image(
+        comment_state, _, comment_data = comment_image(
             browser,
             user_name,
             selected_comments,
@@ -462,4 +463,4 @@ def process_comments(
             logfolder,
         )
 
-        return comment_state
+        return comment_state, comment_data
